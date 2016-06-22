@@ -1,0 +1,1074 @@
+   0  $accept : %entry% $end
+
+   1  TypeName : IDENT
+   2           | WIDGET
+
+   3  Type0 : TYINT
+   4        | TYFLOAT
+   5        | TYBOOL
+   6        | TYCHAR
+   7        | TYSTRING
+   8        | TypeName
+
+   9  Type1 : Type0
+  10        | TypeName LPAREN IDENT RPAREN
+  11        | WIDGET LPAREN IDENT RPAREN
+  12        | OPTION LPAREN IDENT RPAREN
+
+  13  Type2 : Type1
+  14        | Type1 LIST
+
+  15  Type_list : Type2 COMMA Type_list
+  16            | Type2
+
+  17  FType : LPAREN RPAREN
+  18        | LPAREN Type2 RPAREN
+  19        | LPAREN Type_list RPAREN
+
+  20  Type : Type2
+  21       | FUNCTION FType
+
+  22  Arg : STRING
+  23      | Type
+  24      | Template
+
+  25  ArgList : Arg SEMICOLON ArgList
+  26          | Arg
+
+  27  Template : LBRACKET ArgList RBRACKET
+
+  28  Constructor : IDENT Template
+
+  29  AbbrevConstructor : Constructor
+  30                    | IDENT
+
+  31  Constructors : Constructor Constructors
+  32               | Constructor
+
+  33  AbbrevConstructors : AbbrevConstructor AbbrevConstructors
+  34                     | AbbrevConstructor
+
+  35  Safe :
+  36       | UNSAFE
+
+  37  Command : Safe FUNCTION FType IDENT Template
+
+  38  External : Safe EXTERNAL IDENT STRING
+
+  39  Option : OPTION IDENT Template
+  40         | OPTION IDENT
+
+  41  WidgetComponents :
+  42                   | Command WidgetComponents
+  43                   | Option WidgetComponents
+  44                   | External WidgetComponents
+
+  45  ModuleComponents :
+  46                   | Command ModuleComponents
+  47                   | External ModuleComponents
+
+  48  ParserArity :
+  49              | SEQUENCE
+
+  50  entry : TYPE ParserArity TypeName LBRACE Constructors RBRACE
+  51        | TYPE ParserArity TypeName EXTERNAL
+  52        | SUBTYPE ParserArity OPTION LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE
+  53        | SUBTYPE ParserArity TypeName LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE
+  54        | Command
+  55        | WIDGET IDENT LBRACE WidgetComponents RBRACE
+  56        | MODULE IDENT LBRACE ModuleComponents RBRACE
+  57        | EOF
+
+  58  %entry% : '\001' entry
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . entry  (58)
+	Safe : .  (35)
+
+	EOF  shift 3
+	WIDGET  shift 4
+	TYPE  shift 5
+	SUBTYPE  shift 6
+	MODULE  shift 7
+	UNSAFE  shift 8
+	FUNCTION  reduce 35
+
+	entry  goto 9
+	Safe  goto 10
+	Command  goto 11
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	entry : EOF .  (57)
+
+	.  reduce 57
+
+
+state 4
+	entry : WIDGET . IDENT LBRACE WidgetComponents RBRACE  (55)
+
+	IDENT  shift 12
+	.  error
+
+
+state 5
+	entry : TYPE . ParserArity TypeName LBRACE Constructors RBRACE  (50)
+	entry : TYPE . ParserArity TypeName EXTERNAL  (51)
+	ParserArity : .  (48)
+
+	SEQUENCE  shift 13
+	IDENT  reduce 48
+	WIDGET  reduce 48
+
+	ParserArity  goto 14
+
+
+state 6
+	entry : SUBTYPE . ParserArity OPTION LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (52)
+	entry : SUBTYPE . ParserArity TypeName LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (53)
+	ParserArity : .  (48)
+
+	SEQUENCE  shift 13
+	IDENT  reduce 48
+	WIDGET  reduce 48
+	OPTION  reduce 48
+
+	ParserArity  goto 15
+
+
+state 7
+	entry : MODULE . IDENT LBRACE ModuleComponents RBRACE  (56)
+
+	IDENT  shift 16
+	.  error
+
+
+state 8
+	Safe : UNSAFE .  (36)
+
+	.  reduce 36
+
+
+state 9
+	%entry% : '\001' entry .  (58)
+
+	.  reduce 58
+
+
+state 10
+	Command : Safe . FUNCTION FType IDENT Template  (37)
+
+	FUNCTION  shift 17
+	.  error
+
+
+state 11
+	entry : Command .  (54)
+
+	.  reduce 54
+
+
+state 12
+	entry : WIDGET IDENT . LBRACE WidgetComponents RBRACE  (55)
+
+	LBRACE  shift 18
+	.  error
+
+
+state 13
+	ParserArity : SEQUENCE .  (49)
+
+	.  reduce 49
+
+
+state 14
+	entry : TYPE ParserArity . TypeName LBRACE Constructors RBRACE  (50)
+	entry : TYPE ParserArity . TypeName EXTERNAL  (51)
+
+	IDENT  shift 19
+	WIDGET  shift 20
+	.  error
+
+	TypeName  goto 21
+
+
+state 15
+	entry : SUBTYPE ParserArity . OPTION LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (52)
+	entry : SUBTYPE ParserArity . TypeName LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (53)
+
+	IDENT  shift 19
+	WIDGET  shift 20
+	OPTION  shift 22
+	.  error
+
+	TypeName  goto 23
+
+
+state 16
+	entry : MODULE IDENT . LBRACE ModuleComponents RBRACE  (56)
+
+	LBRACE  shift 24
+	.  error
+
+
+state 17
+	Command : Safe FUNCTION . FType IDENT Template  (37)
+
+	LPAREN  shift 25
+	.  error
+
+	FType  goto 26
+
+
+state 18
+	entry : WIDGET IDENT LBRACE . WidgetComponents RBRACE  (55)
+	Safe : .  (35)
+	WidgetComponents : .  (41)
+
+	OPTION  shift 27
+	UNSAFE  shift 8
+	RBRACE  reduce 41
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 29
+	External  goto 30
+	Option  goto 31
+	WidgetComponents  goto 32
+
+
+state 19
+	TypeName : IDENT .  (1)
+
+	.  reduce 1
+
+
+state 20
+	TypeName : WIDGET .  (2)
+
+	.  reduce 2
+
+
+state 21
+	entry : TYPE ParserArity TypeName . LBRACE Constructors RBRACE  (50)
+	entry : TYPE ParserArity TypeName . EXTERNAL  (51)
+
+	LBRACE  shift 33
+	EXTERNAL  shift 34
+	.  error
+
+
+state 22
+	entry : SUBTYPE ParserArity OPTION . LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (52)
+
+	LPAREN  shift 35
+	.  error
+
+
+state 23
+	entry : SUBTYPE ParserArity TypeName . LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (53)
+
+	LPAREN  shift 36
+	.  error
+
+
+state 24
+	entry : MODULE IDENT LBRACE . ModuleComponents RBRACE  (56)
+	Safe : .  (35)
+	ModuleComponents : .  (45)
+
+	UNSAFE  shift 8
+	RBRACE  reduce 45
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 37
+	External  goto 38
+	ModuleComponents  goto 39
+
+
+state 25
+	FType : LPAREN . RPAREN  (17)
+	FType : LPAREN . Type2 RPAREN  (18)
+	FType : LPAREN . Type_list RPAREN  (19)
+
+	IDENT  shift 19
+	RPAREN  shift 40
+	TYINT  shift 41
+	TYFLOAT  shift 42
+	TYBOOL  shift 43
+	TYCHAR  shift 44
+	TYSTRING  shift 45
+	WIDGET  shift 46
+	OPTION  shift 47
+	.  error
+
+	TypeName  goto 48
+	Type0  goto 49
+	Type1  goto 50
+	Type2  goto 51
+	Type_list  goto 52
+
+
+state 26
+	Command : Safe FUNCTION FType . IDENT Template  (37)
+
+	IDENT  shift 53
+	.  error
+
+
+state 27
+	Option : OPTION . IDENT Template  (39)
+	Option : OPTION . IDENT  (40)
+
+	IDENT  shift 54
+	.  error
+
+
+state 28
+	Command : Safe . FUNCTION FType IDENT Template  (37)
+	External : Safe . EXTERNAL IDENT STRING  (38)
+
+	FUNCTION  shift 17
+	EXTERNAL  shift 55
+	.  error
+
+
+state 29
+	WidgetComponents : Command . WidgetComponents  (42)
+	Safe : .  (35)
+	WidgetComponents : .  (41)
+
+	OPTION  shift 27
+	UNSAFE  shift 8
+	RBRACE  reduce 41
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 29
+	External  goto 30
+	Option  goto 31
+	WidgetComponents  goto 56
+
+
+state 30
+	WidgetComponents : External . WidgetComponents  (44)
+	Safe : .  (35)
+	WidgetComponents : .  (41)
+
+	OPTION  shift 27
+	UNSAFE  shift 8
+	RBRACE  reduce 41
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 29
+	External  goto 30
+	Option  goto 31
+	WidgetComponents  goto 57
+
+
+state 31
+	WidgetComponents : Option . WidgetComponents  (43)
+	Safe : .  (35)
+	WidgetComponents : .  (41)
+
+	OPTION  shift 27
+	UNSAFE  shift 8
+	RBRACE  reduce 41
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 29
+	External  goto 30
+	Option  goto 31
+	WidgetComponents  goto 58
+
+
+state 32
+	entry : WIDGET IDENT LBRACE WidgetComponents . RBRACE  (55)
+
+	RBRACE  shift 59
+	.  error
+
+
+state 33
+	entry : TYPE ParserArity TypeName LBRACE . Constructors RBRACE  (50)
+
+	IDENT  shift 60
+	.  error
+
+	Constructor  goto 61
+	Constructors  goto 62
+
+
+state 34
+	entry : TYPE ParserArity TypeName EXTERNAL .  (51)
+
+	.  reduce 51
+
+
+state 35
+	entry : SUBTYPE ParserArity OPTION LPAREN . IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (52)
+
+	IDENT  shift 63
+	.  error
+
+
+state 36
+	entry : SUBTYPE ParserArity TypeName LPAREN . IDENT RPAREN LBRACE AbbrevConstructors RBRACE  (53)
+
+	IDENT  shift 64
+	.  error
+
+
+state 37
+	ModuleComponents : Command . ModuleComponents  (46)
+	Safe : .  (35)
+	ModuleComponents : .  (45)
+
+	UNSAFE  shift 8
+	RBRACE  reduce 45
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 37
+	External  goto 38
+	ModuleComponents  goto 65
+
+
+state 38
+	ModuleComponents : External . ModuleComponents  (47)
+	Safe : .  (35)
+	ModuleComponents : .  (45)
+
+	UNSAFE  shift 8
+	RBRACE  reduce 45
+	FUNCTION  reduce 35
+	EXTERNAL  reduce 35
+
+	Safe  goto 28
+	Command  goto 37
+	External  goto 38
+	ModuleComponents  goto 66
+
+
+state 39
+	entry : MODULE IDENT LBRACE ModuleComponents . RBRACE  (56)
+
+	RBRACE  shift 67
+	.  error
+
+
+state 40
+	FType : LPAREN RPAREN .  (17)
+
+	.  reduce 17
+
+
+state 41
+	Type0 : TYINT .  (3)
+
+	.  reduce 3
+
+
+state 42
+	Type0 : TYFLOAT .  (4)
+
+	.  reduce 4
+
+
+state 43
+	Type0 : TYBOOL .  (5)
+
+	.  reduce 5
+
+
+state 44
+	Type0 : TYCHAR .  (6)
+
+	.  reduce 6
+
+
+state 45
+	Type0 : TYSTRING .  (7)
+
+	.  reduce 7
+
+
+46: shift/reduce conflict (shift 68, reduce 2) on LPAREN
+state 46
+	TypeName : WIDGET .  (2)
+	Type1 : WIDGET . LPAREN IDENT RPAREN  (11)
+
+	LPAREN  shift 68
+	RPAREN  reduce 2
+	COMMA  reduce 2
+	SEMICOLON  reduce 2
+	RBRACKET  reduce 2
+	LIST  reduce 2
+
+
+state 47
+	Type1 : OPTION . LPAREN IDENT RPAREN  (12)
+
+	LPAREN  shift 69
+	.  error
+
+
+state 48
+	Type0 : TypeName .  (8)
+	Type1 : TypeName . LPAREN IDENT RPAREN  (10)
+
+	LPAREN  shift 70
+	RPAREN  reduce 8
+	COMMA  reduce 8
+	SEMICOLON  reduce 8
+	RBRACKET  reduce 8
+	LIST  reduce 8
+
+
+state 49
+	Type1 : Type0 .  (9)
+
+	.  reduce 9
+
+
+state 50
+	Type2 : Type1 .  (13)
+	Type2 : Type1 . LIST  (14)
+
+	LIST  shift 71
+	RPAREN  reduce 13
+	COMMA  reduce 13
+	SEMICOLON  reduce 13
+	RBRACKET  reduce 13
+
+
+51: shift/reduce conflict (shift 72, reduce 16) on RPAREN
+state 51
+	Type_list : Type2 . COMMA Type_list  (15)
+	Type_list : Type2 .  (16)
+	FType : LPAREN Type2 . RPAREN  (18)
+
+	RPAREN  shift 72
+	COMMA  shift 73
+
+
+state 52
+	FType : LPAREN Type_list . RPAREN  (19)
+
+	RPAREN  shift 74
+	.  error
+
+
+state 53
+	Command : Safe FUNCTION FType IDENT . Template  (37)
+
+	LBRACKET  shift 75
+	.  error
+
+	Template  goto 76
+
+
+state 54
+	Option : OPTION IDENT . Template  (39)
+	Option : OPTION IDENT .  (40)
+
+	LBRACKET  shift 75
+	RBRACE  reduce 40
+	OPTION  reduce 40
+	FUNCTION  reduce 40
+	EXTERNAL  reduce 40
+	UNSAFE  reduce 40
+
+	Template  goto 77
+
+
+state 55
+	External : Safe EXTERNAL . IDENT STRING  (38)
+
+	IDENT  shift 78
+	.  error
+
+
+state 56
+	WidgetComponents : Command WidgetComponents .  (42)
+
+	.  reduce 42
+
+
+state 57
+	WidgetComponents : External WidgetComponents .  (44)
+
+	.  reduce 44
+
+
+state 58
+	WidgetComponents : Option WidgetComponents .  (43)
+
+	.  reduce 43
+
+
+state 59
+	entry : WIDGET IDENT LBRACE WidgetComponents RBRACE .  (55)
+
+	.  reduce 55
+
+
+state 60
+	Constructor : IDENT . Template  (28)
+
+	LBRACKET  shift 75
+	.  error
+
+	Template  goto 79
+
+
+state 61
+	Constructors : Constructor . Constructors  (31)
+	Constructors : Constructor .  (32)
+
+	IDENT  shift 60
+	RBRACE  reduce 32
+
+	Constructor  goto 61
+	Constructors  goto 80
+
+
+state 62
+	entry : TYPE ParserArity TypeName LBRACE Constructors . RBRACE  (50)
+
+	RBRACE  shift 81
+	.  error
+
+
+state 63
+	entry : SUBTYPE ParserArity OPTION LPAREN IDENT . RPAREN LBRACE AbbrevConstructors RBRACE  (52)
+
+	RPAREN  shift 82
+	.  error
+
+
+state 64
+	entry : SUBTYPE ParserArity TypeName LPAREN IDENT . RPAREN LBRACE AbbrevConstructors RBRACE  (53)
+
+	RPAREN  shift 83
+	.  error
+
+
+state 65
+	ModuleComponents : Command ModuleComponents .  (46)
+
+	.  reduce 46
+
+
+state 66
+	ModuleComponents : External ModuleComponents .  (47)
+
+	.  reduce 47
+
+
+state 67
+	entry : MODULE IDENT LBRACE ModuleComponents RBRACE .  (56)
+
+	.  reduce 56
+
+
+state 68
+	Type1 : WIDGET LPAREN . IDENT RPAREN  (11)
+
+	IDENT  shift 84
+	.  error
+
+
+state 69
+	Type1 : OPTION LPAREN . IDENT RPAREN  (12)
+
+	IDENT  shift 85
+	.  error
+
+
+state 70
+	Type1 : TypeName LPAREN . IDENT RPAREN  (10)
+
+	IDENT  shift 86
+	.  error
+
+
+state 71
+	Type2 : Type1 LIST .  (14)
+
+	.  reduce 14
+
+
+state 72
+	FType : LPAREN Type2 RPAREN .  (18)
+
+	.  reduce 18
+
+
+state 73
+	Type_list : Type2 COMMA . Type_list  (15)
+
+	IDENT  shift 19
+	TYINT  shift 41
+	TYFLOAT  shift 42
+	TYBOOL  shift 43
+	TYCHAR  shift 44
+	TYSTRING  shift 45
+	WIDGET  shift 46
+	OPTION  shift 47
+	.  error
+
+	TypeName  goto 48
+	Type0  goto 49
+	Type1  goto 50
+	Type2  goto 87
+	Type_list  goto 88
+
+
+state 74
+	FType : LPAREN Type_list RPAREN .  (19)
+
+	.  reduce 19
+
+
+state 75
+	Template : LBRACKET . ArgList RBRACKET  (27)
+
+	IDENT  shift 19
+	STRING  shift 89
+	LBRACKET  shift 75
+	TYINT  shift 41
+	TYFLOAT  shift 42
+	TYBOOL  shift 43
+	TYCHAR  shift 44
+	TYSTRING  shift 45
+	WIDGET  shift 46
+	OPTION  shift 47
+	FUNCTION  shift 90
+	.  error
+
+	TypeName  goto 48
+	Type0  goto 49
+	Type1  goto 50
+	Type2  goto 91
+	Type  goto 92
+	Arg  goto 93
+	Template  goto 94
+	ArgList  goto 95
+
+
+state 76
+	Command : Safe FUNCTION FType IDENT Template .  (37)
+
+	.  reduce 37
+
+
+state 77
+	Option : OPTION IDENT Template .  (39)
+
+	.  reduce 39
+
+
+state 78
+	External : Safe EXTERNAL IDENT . STRING  (38)
+
+	STRING  shift 96
+	.  error
+
+
+state 79
+	Constructor : IDENT Template .  (28)
+
+	.  reduce 28
+
+
+state 80
+	Constructors : Constructor Constructors .  (31)
+
+	.  reduce 31
+
+
+state 81
+	entry : TYPE ParserArity TypeName LBRACE Constructors RBRACE .  (50)
+
+	.  reduce 50
+
+
+state 82
+	entry : SUBTYPE ParserArity OPTION LPAREN IDENT RPAREN . LBRACE AbbrevConstructors RBRACE  (52)
+
+	LBRACE  shift 97
+	.  error
+
+
+state 83
+	entry : SUBTYPE ParserArity TypeName LPAREN IDENT RPAREN . LBRACE AbbrevConstructors RBRACE  (53)
+
+	LBRACE  shift 98
+	.  error
+
+
+state 84
+	Type1 : WIDGET LPAREN IDENT . RPAREN  (11)
+
+	RPAREN  shift 99
+	.  error
+
+
+state 85
+	Type1 : OPTION LPAREN IDENT . RPAREN  (12)
+
+	RPAREN  shift 100
+	.  error
+
+
+state 86
+	Type1 : TypeName LPAREN IDENT . RPAREN  (10)
+
+	RPAREN  shift 101
+	.  error
+
+
+state 87
+	Type_list : Type2 . COMMA Type_list  (15)
+	Type_list : Type2 .  (16)
+
+	COMMA  shift 73
+	RPAREN  reduce 16
+
+
+state 88
+	Type_list : Type2 COMMA Type_list .  (15)
+
+	.  reduce 15
+
+
+state 89
+	Arg : STRING .  (22)
+
+	.  reduce 22
+
+
+state 90
+	Type : FUNCTION . FType  (21)
+
+	LPAREN  shift 25
+	.  error
+
+	FType  goto 102
+
+
+state 91
+	Type : Type2 .  (20)
+
+	.  reduce 20
+
+
+state 92
+	Arg : Type .  (23)
+
+	.  reduce 23
+
+
+state 93
+	ArgList : Arg . SEMICOLON ArgList  (25)
+	ArgList : Arg .  (26)
+
+	SEMICOLON  shift 103
+	RBRACKET  reduce 26
+
+
+state 94
+	Arg : Template .  (24)
+
+	.  reduce 24
+
+
+state 95
+	Template : LBRACKET ArgList . RBRACKET  (27)
+
+	RBRACKET  shift 104
+	.  error
+
+
+state 96
+	External : Safe EXTERNAL IDENT STRING .  (38)
+
+	.  reduce 38
+
+
+state 97
+	entry : SUBTYPE ParserArity OPTION LPAREN IDENT RPAREN LBRACE . AbbrevConstructors RBRACE  (52)
+
+	IDENT  shift 105
+	.  error
+
+	Constructor  goto 106
+	AbbrevConstructor  goto 107
+	AbbrevConstructors  goto 108
+
+
+state 98
+	entry : SUBTYPE ParserArity TypeName LPAREN IDENT RPAREN LBRACE . AbbrevConstructors RBRACE  (53)
+
+	IDENT  shift 105
+	.  error
+
+	Constructor  goto 106
+	AbbrevConstructor  goto 107
+	AbbrevConstructors  goto 109
+
+
+state 99
+	Type1 : WIDGET LPAREN IDENT RPAREN .  (11)
+
+	.  reduce 11
+
+
+state 100
+	Type1 : OPTION LPAREN IDENT RPAREN .  (12)
+
+	.  reduce 12
+
+
+state 101
+	Type1 : TypeName LPAREN IDENT RPAREN .  (10)
+
+	.  reduce 10
+
+
+state 102
+	Type : FUNCTION FType .  (21)
+
+	.  reduce 21
+
+
+state 103
+	ArgList : Arg SEMICOLON . ArgList  (25)
+
+	IDENT  shift 19
+	STRING  shift 89
+	LBRACKET  shift 75
+	TYINT  shift 41
+	TYFLOAT  shift 42
+	TYBOOL  shift 43
+	TYCHAR  shift 44
+	TYSTRING  shift 45
+	WIDGET  shift 46
+	OPTION  shift 47
+	FUNCTION  shift 90
+	.  error
+
+	TypeName  goto 48
+	Type0  goto 49
+	Type1  goto 50
+	Type2  goto 91
+	Type  goto 92
+	Arg  goto 93
+	Template  goto 94
+	ArgList  goto 110
+
+
+state 104
+	Template : LBRACKET ArgList RBRACKET .  (27)
+
+	.  reduce 27
+
+
+state 105
+	Constructor : IDENT . Template  (28)
+	AbbrevConstructor : IDENT .  (30)
+
+	LBRACKET  shift 75
+	IDENT  reduce 30
+	RBRACE  reduce 30
+
+	Template  goto 79
+
+
+state 106
+	AbbrevConstructor : Constructor .  (29)
+
+	.  reduce 29
+
+
+state 107
+	AbbrevConstructors : AbbrevConstructor . AbbrevConstructors  (33)
+	AbbrevConstructors : AbbrevConstructor .  (34)
+
+	IDENT  shift 105
+	RBRACE  reduce 34
+
+	Constructor  goto 106
+	AbbrevConstructor  goto 107
+	AbbrevConstructors  goto 111
+
+
+state 108
+	entry : SUBTYPE ParserArity OPTION LPAREN IDENT RPAREN LBRACE AbbrevConstructors . RBRACE  (52)
+
+	RBRACE  shift 112
+	.  error
+
+
+state 109
+	entry : SUBTYPE ParserArity TypeName LPAREN IDENT RPAREN LBRACE AbbrevConstructors . RBRACE  (53)
+
+	RBRACE  shift 113
+	.  error
+
+
+state 110
+	ArgList : Arg SEMICOLON ArgList .  (25)
+
+	.  reduce 25
+
+
+state 111
+	AbbrevConstructors : AbbrevConstructor AbbrevConstructors .  (33)
+
+	.  reduce 33
+
+
+state 112
+	entry : SUBTYPE ParserArity OPTION LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE .  (52)
+
+	.  reduce 52
+
+
+state 113
+	entry : SUBTYPE ParserArity TypeName LPAREN IDENT RPAREN LBRACE AbbrevConstructors RBRACE .  (53)
+
+	.  reduce 53
+
+
+State 46 contains 1 shift/reduce conflict.
+State 51 contains 1 shift/reduce conflict.
+
+
+29 terminals, 24 nonterminals
+59 grammar rules, 114 states

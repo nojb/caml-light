@@ -1,0 +1,3 @@
+#define CAML_SIXTYFOUR
+#undef CAML_BIG_ENDIAN
+#define CAML_ALIGNMENT
